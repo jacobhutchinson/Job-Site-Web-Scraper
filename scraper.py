@@ -26,7 +26,7 @@ class URL_generator():
     # Return an iterable of all indeed.com url's for the given config
     def indeed_url_generator(self):
         base = 'https://www.indeed.com/jobs?q='
-        output = []
+        output = {}
         all_terms = self.config.all_site_terms + self.config.indeed_terms
         if '' in all_terms:
             all_terms.remove('')
@@ -56,13 +56,13 @@ class URL_generator():
                 # Add page number to url
                 url += '&start=' + str((a-1)*10)
                 term_output.append(url)
-            output.append(term_output)
+            output[search_term] = term_output
         return output
 
     # Return an iterable of all monster.com url's for the given config
     def monster_url_generator(self):
         base = 'https://www.monster.com/jobs/search/'
-        output = []
+        output = {}
         all_terms = self.config.all_site_terms + self.config.monster_terms
         if '' in all_terms:
             all_terms.remove('')
@@ -89,13 +89,13 @@ class URL_generator():
                 # Add page number to url
                 url += '&stpage=1&page=' + str(a)
                 term_output.append(url)
-            output.append(term_output)
+            output[search_term] = term_output
         return output
 
     # Return an iterable of all flexjobs.com url's for the given config
     def flexjobs_url_generator(self):
         base = 'https://www.flexjobs.com/search?'
-        output = []
+        output = {}
         all_terms = self.config.all_site_terms + self.config.flexjobs_terms
         if '' in all_terms:
             all_terms.remove('')
@@ -140,7 +140,7 @@ class URL_generator():
                 else:
                     url += '&will_travel[]=Yes%2C+a+bit'
                 term_output.append(url)
-            output.append(term_output)
+            output[search_term] = term_output
         return output
 
     # Return iterables for url's of all websites in current config
@@ -170,18 +170,19 @@ class Scraper():
         return html_results
 
     def get_html(self, urls):
-        new_urls = []
-        for row in urls:
-            new_urls.append([row[i:i + self.n] for i in range(0, len(row), self.n)])
-        output = []
-        for i in range(len(new_urls)):
-            term = new_urls[i]
+        new_urls = {}
+        for s_term in urls:
+            row = urls[s_term]
+            new_urls[s_term] = [row[i:i + self.n] for i in range(0, len(row), self.n)]
+        output = {}
+        for search_term in new_urls:
+            term = new_urls[search_term]
             term_output = []
-            print('Scraping for term ' + str(i+1) + '...')
+            print('Scraping for term \'' + str(search_term) + '\'...')
             for a in tqdm(range(len(term))):
                 row = term[a]
                 term_output += self.async_requests(row)
-            output.append(term_output)
+            output[search_term] = term_output
         return output
 
 

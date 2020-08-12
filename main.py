@@ -90,8 +90,12 @@ if update_db:
     par = pars.Parser()
     indeed_data, monster_data, flexjobs_data = par.parse(indeed_html, monster_html, flexjobs_html)
     # Store all data in MySQL database
-    # NOTE: DO STUFF HERE
-
-    # NOTE: REMEMBER TO CLOSE DATABASE
-
-
+    indeed_jobs_added, indeed_jobs_updated = db.input_data(indeed_data)
+    monster_jobs_added, monster_jobs_updated = db.input_data(monster_data)
+    flexjobs_jobs_added, flexjobs_jobs_updated = db.input_data(flexjobs_data)
+    print("Database successfully updated\nNew indeed.com jobs: {}\nUpdated indeed.com jobs: {}\
+            \nNew monster.com jobs: {}\nUpdated monster.com jobs: {}\nNew flexjobs.com jobs: {}\
+            \nUpdated flexjobs.com jobs: {}".format(indeed_jobs_added, indeed_jobs_updated, \
+            monster_jobs_added, monster_jobs_updated, flexjobs_jobs_added, flexjobs_jobs_updated))
+    # Close database connection
+    db.close_connection()

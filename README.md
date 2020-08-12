@@ -3,5 +3,5 @@ This tool will scrape the job listing sites Indeed, Monster and Flexjobs for job
 
 ### Setup
 1. Setup the environment using conda # NOTE: FILL IN
-2. Create MySQL database for the project
-3. Fill in config settings, including MySQL username and password
+2. Start your mysql server instance locally
+3. Fill in config settings, including MySQL username and password and a name for the MySQL database that will be created

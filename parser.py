@@ -12,7 +12,8 @@ class Parser():
     def parse_indeed(self, html):
         print('Parsing indeed.com HTML...')
         data = {}
-        for term in html:
+        for search_term in html:
+            term = html[search_term]
             page_num = 1
             for page in term:
                 soup = BeautifulSoup(page.content, 'html.parser')
@@ -41,6 +42,7 @@ class Parser():
                     job_data.append(location_data)
                     job_data.append(company_data)
                     job_data.append(summary_data)
+                    job_data.append(str(search_term))
                     if id_data not in data:
                         data[id_data] = job_data
                 page_num += 1
@@ -50,7 +52,8 @@ class Parser():
     def parse_monster(self, html):
         print('Parsing monster.com HTML...')
         data = {}
-        for term in html:
+        for search_term in html:
+            term = html[search_term]
             start_num = None
             page_num = 1
             done = False
@@ -95,6 +98,7 @@ class Parser():
                                     # for each job, and so to not accidentally DDOS monster.com for 10,000
                                     # job summaries, I decided to not collect that information
                                     new_data.append('N/A')
+                                    new_data.append(str(search_term))
                                     if title_data not in data:
                                         data[title_data] = new_data
                     page_num += 1
@@ -104,7 +108,8 @@ class Parser():
     def parse_flexjobs(self, html):
         print('Parsing flexjobs.com HTML...')
         data = {}
-        for term in html:
+        for search_term in html:
+            term = html[search_term]
             page_num = 1
             done = False
             for page in term:
@@ -138,6 +143,7 @@ class Parser():
                             new_data.append(location_data)
                             new_data.append(company_data)
                             new_data.append(summary_data)
+                            new_data.append(str(search_term))
                             if id_data not in data:
                                 data[id_data] = new_data
                     else:
