@@ -61,6 +61,9 @@ class Parser():
                 if not done:
                     soup = BeautifulSoup(page.content, 'html.parser')
                     results = soup.find(id='ResultsContainer')
+                    if results is None:
+                        print('Blocked form scraping monster.com :(')
+                        return None
                     job_elems = results.find_all('section', class_='card-content')
                     if page_num == 1:
                         start_num = len(job_elems)

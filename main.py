@@ -5,6 +5,60 @@ import confparser
 import scraper
 import parser as pars
 import database
+from datetime import date, datetime
+import views
+
+#######################
+# Utility IO Function #
+#######################
+
+def term_prompt(db):
+    # Get all search terms with most recent search dates
+    terms_dates = db.all_search_terms()
+    terms = []
+    dates = []
+    for i in range(len(terms_dates)):
+        terms.append(terms_dates[i][0])
+        dates.append(terms_dates[i][1])
+    # Prompt user for terms to view
+    selected_terms = []
+    print("Please type which of the following terms you want to search for, " + \
+            "or type DONE to finish. \nMore than one term can be selected. Enter " + \
+            "a term a second time to remove it from the list.")
+    not_done = True
+    while not_done:
+        print('Terms: ')
+        for term in terms:
+            if term in selected_terms:
+                print('[X] {}'.format(term))
+            else:
+                print('[ ] {}'.format(term))
+        not_selected = True
+        while not_selected:
+            selected_term = input('Enter a search term or DONE to finish: ')
+            if selected_term not in terms and selected_term != 'DONE':
+                print('Invalid term, please enter another term')
+            elif selected_term == 'DONE':
+                if len(selected_terms) == 0:
+                    print('Must enter at least one term')
+                else:
+                    not_done = False
+                    not_selected = False
+            else:
+                if selected_term not in selected_terms:
+                    selected_terms.append(selected_term)
+                    k = None
+                    for j in range(len(terms)):
+                        if terms[j] == selected_term:
+                            k = j
+                    term_date = dates[k]
+                    result = datetime.now().date() - term_date
+                    if result.days >= 28:
+                        print('WARNING: this term has not been updated in 28 days. Job listings may not be accurate.')
+                else:
+                    selected_terms.remove(selected_term)
+                not_selected = False
+    return selected_terms
 
 ##############################################
 # Command Line Arguments and Config Settings #
@@ -15,55 +69,33 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--update_db', action = 'store_true', help = 'run the scraper \
         with given configuration settings for all websites and input that information \
         into the database. Can call a viewing option as well afterwards to view the update database.')
-parser.add_argument('--all', action = 'store_true', help = 'run the scraper with \
-        given configuration settings for all websites. Does not store results in \
-        database. Must be run with viewing option.')
-parser.add_argument('--indeed', action = 'store_true', help = 'run the scraper on \
-        indeed.com job site using given configuartion settings, not compatible with \
-        --all command. Does not store result in database. Must be run with viewing option.')
-parser.add_argument('--monster', action = 'store_true', help = 'run the scraper on \
-        monster.com job site using given configuration settings, not compatible with \
-        --all command. Does not store result in database. Must be run with viewing option.')
-parser.add_argument('--flexjobs', action = 'store_true', help = 'run the scraper on \
-        flexjobs.com job site using given configuration settings, not compatible with \
-        --all command. Does not store result in database. Must be run with viewing option.')
-parser.add_argument('--view', help = 'placeholder for viewing options, stores various \
-        values for different viewing types, replace later')
+parser.add_argument('--view_map', action= 'store_true', help = 'View the most recent data for \
+        selected search terms on top of a map. Multiple viewwing options can not be viewed \
+        simultaneously.')
+parser.add_argument('--view_loc', action = 'store_true', help = 'View the most recent data for \
+        selected search terms that are a given distance from a specific location. Multiple \
+        viewing options can not be viewed simultaneously.')
 parser.add_argument('--config_path', help = 'path to config file, if in current directory \
-        and named config.cfg, use \'--config_path config.cfg\'. Must always be specified.')
+        and named config.cfg, use \'--config_path config.cfg\'. Must always be specified to \
+        update database..')
+
 args = parser.parse_args()
 update_db = args.update_db
-all_sites = args.all
-indeed = args.indeed
-monster = args.monster
-flexjobs = args.flexjobs
-view = args.view
+view_map = args.view_map
+view_loc = args.view_loc
 config_path = args.config_path
-
-sites = []
-if all_sites: sites.append('--all')
-if indeed: sites.append('--indeed')
-if monster: sites.append('--monster')
-if flexjobs: sites.append('--flexjobs')
-
-# Logic for parsed arguments
-if update_db and sites:
-    print("--update_db command cannot be run with the " + ', '.join(sites) + ' command(s).')
-    exit(0)
-
-if all_sites and len(sites) > 1:
-    sites_not_all = sites.copy()
-    sites_not_all.remove('--all')
-    print('--all command cannot be run with ' + ', '.join(sites_not_all) + ' command(s)')
-    exit(0)
-
-if sites and not view:
-    print(', '.join(sites) + ' command(s) cannot be run without a viewing option.')
-    exit(0)
 
 if not config_path:
     print('--config path command must be set, please re-run and enter config file path')
     exit(0)
+
+if view_map and view_loc:
+    print('--view_map and --view_loc commands cannot be set simultaneously, \
+            please re-run with only one')
+    exit(0)
+
+if not update_db and not view_map and not view_loc:
+    print('Cannot be run without commands. Use --help command to see all')
 
 # Parse the config file
 config = confparser.parse(config_path)
@@ -90,8 +122,11 @@ if update_db:
     par = pars.Parser()
     indeed_data, monster_data, flexjobs_data = par.parse(indeed_html, monster_html, flexjobs_html)
     # Store all data in MySQL database
+    print("Storing and calculating coordinates for indeed.com data...")
     indeed_jobs_added, indeed_jobs_updated = db.input_data(indeed_data)
+    print("Storing and calculating coordinates for monster.com data...")
     monster_jobs_added, monster_jobs_updated = db.input_data(monster_data)
+    print("Storing and calculating coordinates for flexjobs.com data...")
     flexjobs_jobs_added, flexjobs_jobs_updated = db.input_data(flexjobs_data)
     print("Database successfully updated\nNew indeed.com jobs: {}\nUpdated indeed.com jobs: {}\
             \nNew monster.com jobs: {}\nUpdated monster.com jobs: {}\nNew flexjobs.com jobs: {}\
@@ -99,3 +134,26 @@ if update_db:
             monster_jobs_added, monster_jobs_updated, flexjobs_jobs_added, flexjobs_jobs_updated))
     # Close database connection
     db.close_connection()
+
+####################
+# View Data on Map #
+####################
+
+if view_map:
+    # Initialize database class and connect to MySQL database
+    db = database.Database(config)
+    selected_terms = term_prompt(db)
+    # Get the most recent data by search term, with correspond
+    #    latitude and longitude
+    data = db.get_most_recent(selected_terms)
+    views = views.Views()
+    views.map_view(data)
+
+#########################
+# View Data by Location #
+#########################
+
+if view_loc:
+    asdf
+
+

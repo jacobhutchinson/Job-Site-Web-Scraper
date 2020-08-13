@@ -70,7 +70,7 @@ class URL_generator():
             term_output = []
             words = search_term.split(' ')
             # Search first 100 pages of results
-            for a in range(1, 101):
+            for a in range(1, 11):
                 url = base
                 # Add job type to url
                 if self.config.monster_job_type[0] == 'full_time':
