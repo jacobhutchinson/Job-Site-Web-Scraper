@@ -27,5 +27,4 @@ class Views():
         gv.extension('matplotlib')
         job_df = self.__convert_to_df(data)
         job_gv_points = gv.Points(job_df, ['Lat', 'Long'], ['Title', 'Summary', 'Link'])
-        #gvts.CartoDark * job_gv_points
-        gv.save(job_gv_points, 'output.html')
+        gvts.CartoDark * job_gv_points

@@ -97,9 +97,7 @@ class Database():
                               "  `job_location` = %s,"
                               "  `job_company` = %s,"
                               "  `job_summary` = %s,"
-                              "  `search_date` = %s,"
-                              "  `lat` = %s,"
-                              "  `long` = %s"
+                              "  `search_date` = %s"
                               "WHERE"
                               "  `id_var` = %s")
         # Handle data from indeed.com
@@ -120,7 +118,7 @@ class Database():
                 except mysql.connector.IntegrityError as err:
                     old_jobs_updated += 1
                     updated_job = (job_data[2], job_data[3], remote_data, job_data[5], \
-                            job_data[6], job_data[7], curr_date, lat, lng, job_data[1])
+                            job_data[6], job_data[7], curr_date, job_data[1])
                     try:
                         self.cursor.execute(update_job_listing, updated_job)
                     except Exception as err:
@@ -136,7 +134,7 @@ class Database():
                 for i in range(len(job_data)):
                     if job_data[i] == '' or job_data[i] == 'N/A':
                         job_data[i] = None
-                loc = self.getlatlong(job_data[5])
+                loc = self.get_latlong(job_data[5])
                 lat = None if loc == None else loc[0]
                 lng = None if loc == None else loc[1]
                 new_job = (job_data[0], job_data[8], job_data[1], job_data[2], job_data[3], \
@@ -146,7 +144,7 @@ class Database():
                 except mysql.connector.IntegrityError as err:
                     old_jobs_updated += 1
                     updated_job = (job_data[2], job_data[3], None, job_data[5], job_data[6], \
-                            None, curr_date, lat, lng, job_data[1])
+                            None, curr_date, job_data[1])
                     try:
                         self.cursor.execute(update_job_listing, updated_job)
                     except Exception as err:
@@ -173,7 +171,7 @@ class Database():
                 except mysql.connector.IntegrityError as err:
                     old_jobs_updated += 1
                     updated_job = (job_data[2], job_data[3], remote_data, job_data[5], \
-                            None, None, curr_date, lat, lng, job_data[1])
+                            None, None, curr_date, job_data[1])
                     try:
                         self.cursor.execute(update_job_listing, updated_job)
                     except Exception as err:

@@ -102,8 +102,8 @@ class Parser():
                                     # job summaries, I decided to not collect that information
                                     new_data.append('N/A')
                                     new_data.append(str(search_term))
-                                    if title_data not in data:
-                                        data[title_data] = new_data
+                                    if id_data not in data:
+                                        data[id_data] = new_data
                     page_num += 1
         return data
 
