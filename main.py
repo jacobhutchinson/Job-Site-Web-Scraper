@@ -75,6 +75,9 @@ parser.add_argument('--view_map', action= 'store_true', help = 'View the most re
 parser.add_argument('--view_loc', action = 'store_true', help = 'View the most recent data for \
         selected search terms that are a given distance from a specific location. Multiple \
         viewing options can not be viewed simultaneously.')
+parser.add_argument('--view_remote', action = 'store_true', help = 'View the most recent data for \
+        remote jobs in selected search terms, printed in console. Multiple viewing options can not \
+        be viewed simultaneously.')
 parser.add_argument('--config_path', help = 'path to config file, if in current directory \
         and named config.cfg, use \'--config_path config.cfg\'. Must always be specified to \
         update database..')
@@ -83,18 +86,19 @@ args = parser.parse_args()
 update_db = args.update_db
 view_map = args.view_map
 view_loc = args.view_loc
+view_remote = args.view_remote
 config_path = args.config_path
 
 if not config_path:
     print('--config path command must be set, please re-run and enter config file path')
     exit(0)
 
-if view_map and view_loc:
-    print('--view_map and --view_loc commands cannot be set simultaneously, \
-            please re-run with only one')
+if sum([view_map, view_loc, view_remote]) > 1:
+    print('--view_map, --view_loc and --view_remote commands cannot be set simultaneously,\
+             please re-run with only one')
     exit(0)
 
-if not update_db and not view_map and not view_loc:
+if not update_db and not view_map and not view_loc and not view_remote:
     print('Cannot be run without commands. Use --help command to see all')
 
 # Parse the config file
@@ -154,6 +158,39 @@ if view_map:
 #########################
 
 if view_loc:
-    asdf
+    # Initialize database class and connect to MySQL database
+    db = database.Database(config)
+    loc_chosen = False
+    while not loc_chosen:
+        loc = input('Please input an address: ')
+        latlong = db.get_latlong(loc)
+        if latlong is not None:
+            loc_chosen = True
+        else:
+            print('Invalid location, please enter another address: ')
+    dist_chosen = False
+    while not dist_chosen:
+        dist = input('Please enter a max distance, in miles: ')
+        try:
+            dist = float(dist)
+            dist_chosen = True
+        except ValueError:
+            print('Invalid distance value, please enter another: ')
+    selected_terms = term_prompt(db)
+    data = db.get_most_recent(selected_terms)
+    dist_data = db.filter_distance(data, latlong, dist)
+    views = views.Views()
+    views.map_view(dist_data)
 
+####################
+# View Remote Jobs #
+####################
 
+if view_remote:
+    # Initialize database class and connect to MySQL database
+    db = database.Database(config)
+    selected_terms = term_prompt(db)
+    data = db.get_most_recent(selected_terms)
+    remote_data = db.filter_remote(data)
+    views = views.Views()
+    views.list_jobs(remote_data)

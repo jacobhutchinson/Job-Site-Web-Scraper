@@ -3,6 +3,7 @@ import mysql.connector
 from mysql.connector import errorcode
 from datetime import date, datetime
 from geopy.geocoders import Nominatim
+from geopy.distance import geodesic
 from tqdm import tqdm
 
 """ Class for accessing and modifying the database for this project """
@@ -200,6 +201,31 @@ class Database():
             if term not in output:
                 output[term] = data
         return output
+
+    """ Filters data to only jobs that are within a specified distance from a given location """
+    def filter_distance(self, data, latlong, dist):
+        final_data = {}
+        for term in data:
+            term_jobs = data[term]
+            final_data[term] = []
+            for job_row in term_jobs:
+                loc1 = (latlong[0], latlong[1])
+                loc2 = (job_row[10], job_row[11])
+                total_dist = geodesic(loc1, loc2).miles
+                if not total_dist > dist:
+                    final_data[term].append(job_row)
+        return final_data
+
+    """ Filters data to only remote jobs """
+    def filter_remote(self, data):
+        final_data = {}
+        for term in data:
+            term_jobs = data[term]
+            final_data[term] = []
+            for job_row in term_jobs:
+                if job_row[5] == 1:
+                    final_data[term].append(job_row)
+        return final_data
 
     """ Returns all the most recent data for given search terms 
         and their respective locations in latitude and longitude """
