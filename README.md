@@ -40,7 +40,7 @@ You can also list all remote jobs from several search terms simultaneously from 
 IMAGE HERE
 
 ## Setup
-1. Setup the environment using conda and the environment.yml file by running ```conda env create -f environment.yml```
+1. Setup the environment using conda and the environment.yml file by running ```conda env create -f environment.yml``` and activate the environment using ```conda activate scraper```
 2. Start your local MySQL server instace
 3. Fill in config settings, including MySQL username and password and a name for the MySQL database that will be created
 4. Run main.py file with various options. To see all configurations, run ```./main.py --help```
