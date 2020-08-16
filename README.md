@@ -13,7 +13,7 @@ Parsed Data is stored in a locally in a MySQL database instance. The MySQL datab
 
 To create or update database, run the command ```./main.py --update_db --config_path config.cfg```
 
-![Scraping Image](https://github.com/jacobhutchinson/Job-Site-Web-Scraper/blob/master/images/scraper.PNG)
+![Scraping Image](https://github.com/jacobhutchinson/Job-Site-Web-Scraper/blob/master/images/scraping.PNG)
 
 # Viewing Options
 
