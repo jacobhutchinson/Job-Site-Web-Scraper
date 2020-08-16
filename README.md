@@ -37,6 +37,8 @@ To initiate location view, run ```./main.py --view_loc --config_path config.cfg`
 
 You can also list all remote jobs from several search terms simultaneously from your database, displayed in your console with tiles, companies, summaries and links to the job listings.
 
+To initiate remote jobs listing, run ```./main.py --view_remote --config_path config.cfg```
+
 ![Remote Image](https://github.com/jacobhutchinson/Job-Site-Web-Scraper/blob/master/images/remote.PNG)
 
 # Setup
